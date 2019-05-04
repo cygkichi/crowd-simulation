@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <title>Random Walk Plot</title>
+  <meta charset="utf-8">
+</head>
+<body>
+<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<script>
+    var points = {{data.points | safe}}
+    var width  = 1000; 
+    var height = 500; 
+    var margin = {"top": 30, "bottom": 60, "right": 30, "left": 60 };
+ 
+    var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
+    var xScale = d3.scaleLinear()
+    .domain([0, d3.max(points, function(d) { return d[0]; })])
+    .range([margin.left, width - margin.right]);
+ 
+     var yScale = d3.scaleLinear()
+     .domain([d3.min(points, function(d) { return d[1]; }),
+              d3.max(points, function(d) { return d[1]; })])
+     .range([height - margin.bottom, margin.top]);
+     
+     var axisx = d3.axisBottom(xScale).ticks(5);
+     var axisy = d3.axisLeft(yScale).ticks(5);
+     svg.append("g")
+        .attr("transform", "translate(" + 0 + "," + (height - margin.bottom) + ")")
+        .call(axisx)
+        .append("text")
+        .attr("fill", "black")
+        .attr("x", (width - margin.left - margin.right) / 2 + margin.left)
+        .attr("y", 35)
+        .attr("text-anchor", "middle")
+        .attr("font-size", "10pt")
+        .attr("font-weight", "bold")
+        .text("Step");
+ 
+     svg.append("g")
+        .attr("transform", "translate(" + margin.left + "," + 0 + ")")
+        .call(axisy)
+        .append("text")
+        .attr("fill", "black")
+        .attr("x", -(height - margin.top - margin.bottom) / 2 - margin.top)
+        .attr("y", -35)
+        .attr("transform", "rotate(-90)")
+        .attr("text-anchor", "middle")
+        .attr("font-weight", "bold")
+        .attr("font-size", "10pt")
+     svg.append("g")
+        .selectAll("circle")
+        .data(points)
+        .enter()
+        .append("circle")        
+        .attr("cx", function(d) { return xScale(d[0]); })
+        .attr("cy", function(d) { return yScale(d[1]); })
+        .attr("fill", "steelblue")
+        .attr("r", 4);
+</script>
+</body>
+</html>
