@@ -3,60 +3,75 @@
 <head>
   <title>Random Walk Plot</title>
   <meta charset="utf-8">
+  <script src="https://d3js.org/d3.v5.min.js"></script>
+  <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+  <link rel="stylesheet" href="/static/css/style.css?aaaa">
 </head>
 <body>
-<script src="https://d3js.org/d3.v5.min.js"></script>
+
+<form action="/setup" method="post">
+    <button name="setup simulation" value="from post">setup simulation</button>
+</form>
+<form action="/start" method="post">
+    <button name="start" value="from post">start</button>
+</form>
+
+<div id="sample"></div>
+<script>
+  var count = 0;
+  var max_count = 10;
+  var countup = function(){
+    count++;
+    if(count>max_count){count=0;}; 
+    $('#sample').css({
+            backgroundPosition: count
+    });
+  } 
+  setInterval(countup, 1000);
+</script>
+
+
+<div id="graph"></div>
 
 <script>
-    var points = {{data.points | safe}}
-    var width  = 1000; 
-    var height = 500; 
-    var margin = {"top": 30, "bottom": 60, "right": 30, "left": 60 };
- 
-    var svg = d3.select("body").append("svg").attr("width", width).attr("height", height);
-    var xScale = d3.scaleLinear()
-    .domain([0, d3.max(points, function(d) { return d[0]; })])
-    .range([margin.left, width - margin.right]);
- 
-     var yScale = d3.scaleLinear()
-     .domain([d3.min(points, function(d) { return d[1]; }),
-              d3.max(points, function(d) { return d[1]; })])
-     .range([height - margin.bottom, margin.top]);
-     
-     var axisx = d3.axisBottom(xScale).ticks(5);
-     var axisy = d3.axisLeft(yScale).ticks(5);
-     svg.append("g")
-        .attr("transform", "translate(" + 0 + "," + (height - margin.bottom) + ")")
-        .call(axisx)
-        .append("text")
-        .attr("fill", "black")
-        .attr("x", (width - margin.left - margin.right) / 2 + margin.left)
-        .attr("y", 35)
-        .attr("text-anchor", "middle")
-        .attr("font-size", "10pt")
-        .attr("font-weight", "bold")
-        .text("Step");
- 
-     svg.append("g")
-        .attr("transform", "translate(" + margin.left + "," + 0 + ")")
-        .call(axisy)
-        .append("text")
-        .attr("fill", "black")
-        .attr("x", -(height - margin.top - margin.bottom) / 2 - margin.top)
-        .attr("y", -35)
-        .attr("transform", "rotate(-90)")
-        .attr("text-anchor", "middle")
-        .attr("font-weight", "bold")
-        .attr("font-size", "10pt")
-     svg.append("g")
-        .selectAll("circle")
-        .data(points)
-        .enter()
-        .append("circle")        
-        .attr("cx", function(d) { return xScale(d[0]); })
-        .attr("cy", function(d) { return yScale(d[1]); })
-        .attr("fill", "steelblue")
-        .attr("r", 4);
+    var xs     = {{data.xs | safe}};
+    var ys     = {{data.ys | safe}};
+    var xlim   = {{data.xlim | safe}};
+    var ylim   = {{data.ylim | safe}};
+    var max_step = {{data.max_step | safe}};
+    var n = 100;
+    var x = [], y = [];
+    var dt = 0.015;
+
+    var i = 0;
+    Plotly.plot('graph', [{
+        x: xs[i],
+        y: ys[i],
+        mode: 'markers'
+    }], {
+        xaxis: {range: xlim},
+        yaxis: {range: ylim}
+    })
+
+    function compute () {
+        i = i + 1;
+        if(i > max_step){i=0}
+    }
+
+    function update () {
+        compute();
+        Plotly.animate('graph', {
+            data: [{x: xs[i], y: ys[i]}]
+        }, {
+            transition:{duration: 0},
+            frame:{duration: 0,redraw: false}
+        });
+        requestAnimationFrame(update);
+    }
+
+    requestAnimationFrame(update);
 </script>
+
 </body>
 </html>
